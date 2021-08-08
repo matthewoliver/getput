@@ -130,6 +130,8 @@ def build_object():
 def md5check(oper, cname, objname, response, md5_digest):
 
     etag = response['headers']['etag']
+    if etag.startswith('"') and etag.endswith('"'):
+        etag = etag[1:-1]
     if etag != md5_digest:
         txid = response['headers']['x-trans-id']
         print "MD5 Error - on %s, TransID: %s for %s/%s, %s != %s" % \
@@ -360,6 +362,8 @@ def main(argv):
                        help="defined value for X-Trans-Id-Extra")
     groupc.add_option('--headers',   dest='headers',
                        help="additional headers")
+    groupc.add_option('--query-string',   dest='querystr',
+                       help="supply a query string", default=None)
     groupc.add_option('--insecure', dest='insecure',
                       action='store_true', default=False,
                       help="allow access without verifying SSL certs")
@@ -1094,7 +1098,8 @@ def put(connection, instance, donetime, cname, csize, oname, random_flag):
             try:
                 connection.put_object(cname, objname, fp, osize,
                                   response_dict=response,
-                                  headers=headers)
+                                  headers=headers,
+                                  query_string=options.querystr)
                 logexec("PUT succeeded")
                 transID = response['headers']['x-trans-id']
                 md5check('put', cname, objname, response, md5_digest)
@@ -1260,7 +1265,8 @@ def get(connection, instance, donetime, cname, csize, oname, random_flag):
                 headers, body = connection.get_object(cname, objname,
                                                   headers=headers,
                                                   response_dict=response,
-                                                  resp_chunk_size=65536)
+                                                  resp_chunk_size=65536,
+                                                  query_string=options.querystr)
                 transID = response['headers']['x-trans-id']
 
             except ClientException as err:
@@ -1429,7 +1435,8 @@ def delobj(connection, instance, donetime, cname, csize, oname, random_flag):
         if not s3:
             try:
                 connection.delete_object(cname, objname,
-                                     response_dict=response)
+                                     response_dict=response,
+                                     query_string=options.querystr)
                 transID = response['headers']['x-trans-id']
 
             except ClientException as err:
