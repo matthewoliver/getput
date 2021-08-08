@@ -12,5 +12,5 @@ setup(name='gptools',
       data_files=[('/usr/bin',['getput','gpmulti','gpsuite','gpsum','gpwhere']),
                   ('/etc/gpsuite.d', ['gpsuite.conf']),
                   ('/usr/share/doc/gptools',['getting-started.txt','RELEASE-gptools','Introduction.pdf']),
-                  ('/usr/share/man/man1',['getput.1', 'gpmulti.1', 'gpsuite.1', 'gpsum.1', 'gpwhere.1'])]
+                  ('/usr/share/man/man1',['getput.1', 'gpmulti.1', 'gpsuite.1', 'gpsum.1', 'gpwhere.1'])])
      
