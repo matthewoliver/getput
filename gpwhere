@@ -48,7 +48,7 @@ def proc_results(results, summary):
 
         # pdsh results start with address in addition to log record so remove
         fields = line.split()
-        if options.pdsh:
+        if args.pdsh:
             del fields[0]
 
         # looks like the date/time format has changed, not sure which version, but instead
@@ -131,9 +131,9 @@ def proc_txid(txid, end='', tx_time='', tries=''):
     summary['o']=[]
     summary['p']=[]
 
-    if options.pdsh:
+    if args.pdsh:
         errlog = '/tmp/pdsh.err'
-        command = 'pdsh -Rssh %s sudo grep %s /var/log/swift/swift.log 2>%s' % (options.pdsh, txid, errlog)
+        command = 'pdsh -Rssh %s sudo grep %s /var/log/swift/swift.log 2>%s' % (args.pdsh, txid, errlog)
         
         if debug &1:
             print 'Command:', command
@@ -157,7 +157,7 @@ def proc_txid(txid, end='', tx_time='', tries=''):
 
         time = proc_results(results, summary)
 
-    if options.swift:
+    if args.swift:
         ssh = 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes'
         ssh += ' -o ServerAliveInterval=60' 
         for addr in addrs:
@@ -195,7 +195,7 @@ def proc_txid(txid, end='', tx_time='', tries=''):
 		    name += ' '
 		name += ' '
 	    if output != '':
-		if options.vert or (options.vertt and t != last):
+		if args.vert or (args.vertt and t != last):
 	            output += '\n'
 	    last = t
             output += "  %s/%s %s" % (t, name, time)
@@ -226,52 +226,52 @@ parser.add_option('-V', dest='vertt', help='one server type per line', action='s
 parser.add_option('-w', dest='pdsh',  help='psdh -w string OR file', default='')
 
 try:
-    (options, args) = parser.parse_args(sys.argv[1:])
+    (args, args) = parser.parse_args(sys.argv[1:])
 except:
     print 'invalid command'
     sys.exit()
 
-if options.help:
+if args.help:
     parser.print_help()
     sys.exit()
 
-if options.swift and options.pdsh:
+if args.swift and args.pdsh:
     print "-s and -w are mutually exclusive"
     sys.exit()
 
-if not options.swift and not options.pdsh:
+if not args.swift and not args.pdsh:
     print "-s OR -w is required"
     sys.exit()
 
-debug = int(options.debug)
+debug = int(args.debug)
 
-if options.txid == '':
+if args.txid == '':
     error('-t required')
 
 for t in ('a', 'c', 'o', 'p'):
     buckets[t] = {}
 
 addrs = []
-if options.swift:
-    if os.path.isfile(options.swift):
-        f = open(options.swift, 'r')
+if args.swift:
+    if os.path.isfile(args.swift):
+        f = open(args.swift, 'r')
         for addr in f:
             addrs.append(addr[:-1])
     else:
-        addrs = options.swift.split(',')
+        addrs = args.swift.split(',')
 else:
     try:
-        f = open(options.pdsh, 'r')
-        options.pdsh = f.readline()[0:-1]
+        f = open(args.pdsh, 'r')
+        args.pdsh = f.readline()[0:-1]
         f.close()
     except:
-        error("can't open: %s" % options.pdsh)
+        error("can't open: %s" % args.pdsh)
 
-if not os.path.isfile(options.txid):
-    proc_txid(options.txid)
+if not os.path.isfile(args.txid):
+    proc_txid(args.txid)
     sys.exit()
 
-with open(options.txid, 'r') as f:
+with open(args.txid, 'r') as f:
     for line in f:
         line = line[0:-1]
         if line == '':
@@ -294,7 +294,7 @@ with open(options.txid, 'r') as f:
             tries = fields[12]
         proc_txid(txid, end, time, tries)
 
-if options.lat:
+if args.lat:
     for i in ('p', 'a', 'c', 'o'):
 	#print "%s: %s" % (i, buckets[i])
 	print "Bucket %s" % i,
